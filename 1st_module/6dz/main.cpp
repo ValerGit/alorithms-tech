@@ -9,7 +9,16 @@ void placing_X_into_Y_row(uint64_t **&arr, uint64_t x, int y, int start, int end
     }
 }
 
-uint64_t findCombinations(uint64_t**& arr, int size) {
+uint64_t findCombinations(int size) {
+    //массив с возможными вариантами построения пирамидок из i-го количества кубиков
+    uint64_t **arr = new uint64_t *[size];
+    for (int i = 0; i < size; ++i) {
+        arr[i] = new uint64_t[size];
+        //заполняем всю матрицу нулями
+        for (int j = 0; j < size; ++j) {
+            arr[i][j] = 0;
+        }
+    }
     //один способ положить на верх ноль
     placing_X_into_Y_row(arr, 1, 0, 0, size);
     for (int i = 1; i < size; ++i) {
@@ -20,7 +29,11 @@ uint64_t findCombinations(uint64_t**& arr, int size) {
             }
         }
     }
-    return arr[size-1][size-1];
+    uint64_t temp = arr[size-1][size-1];
+    for (int i = 0; i < size; ++i) {
+        delete[] arr[i];
+    }
+    return temp;
 }
 
 int main() {
@@ -31,22 +44,7 @@ int main() {
         return 0;
     }
     ++n;
-    //массив с возможными вариантами построения пирамидок из i-го количества кубиков
-    uint64_t **arr = new uint64_t *[n];
-    for (int i = 0; i < n; ++i) {
-        arr[i] = new uint64_t[n];
-        //заполняем всю матрицу нулями
-        for (int j = 0; j < n; ++j) {
-            arr[i][j] = 0;
-        }
-    }
-
-    cout << findCombinations(arr, n);
-
-    for (int i = 0; i < n; ++i) {
-        delete[] arr[i];
-    }
-    delete[] arr;
+    cout << findCombinations(n);
     return 0;
 }
 
