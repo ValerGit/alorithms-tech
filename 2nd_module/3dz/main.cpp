@@ -24,7 +24,7 @@ public:
     Heap() {}
     Heap(T*,int);
     ~Heap();
-    T extractMin();
+    T getElem(int i);
 
 private:
     T* arr;
@@ -69,11 +69,8 @@ void Heap<T>::sort() {
 }
 
 template <typename T>
-T Heap<T>::extractMin() {
-    T temp = arr[0];
-    swap(arr[0], arr[--size]);
-    siftDown(0);
-    return temp;
+T Heap<T>::getElem(int i) {
+    return arr[i];
 }
 
 template <typename T>
@@ -100,7 +97,7 @@ int isColored(Heap<T>* heap, int size) {
     int start = 0;
 
     for(int i = 0; i < size; ++i) {
-        Part temp = heap->extractMin();
+        Part temp = heap->getElem(i);
         if(count == 0) {
             ++count;
             start = temp.val;
