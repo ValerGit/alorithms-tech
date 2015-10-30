@@ -33,6 +33,7 @@ uint64_t findCombinations(int size) {
     for (int i = 0; i < size; ++i) {
         delete[] arr[i];
     }
+    delete[] arr;
     return temp;
 }
 
