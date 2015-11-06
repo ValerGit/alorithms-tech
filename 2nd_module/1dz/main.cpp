@@ -28,22 +28,16 @@ bool isLess(int& left, int& right) {
 }
 
 bool isLess(Box& left, Box& right) {
-    if( left.x == right.x) {
-        if(left.y == right.y) {
-            return left.z < right.z;
-        }
-        return left.y < right.y;
-    }
     return left.x < right.x;
 }
 
 template <class T>
-void Sort (T*& arr, int left, int right, bool ((*isLess)(T&, T&)) ) {
+void Sort (T* arr, int left, int right, bool ((*isLess)(T&, T&)) ) {
     for( int i = left+1; i < right; ++i) {
         for( int j = i-1; j >= 0; --j) {
-            if(isLess(arr[j], arr[j+1])) {
-                T temp= arr[j];
-                arr[j] = arr[j+1];
+            if(isLess(arr[j], arr[i])) {
+                T temp= arr[i];
+                memcpy( &arr[j], &arr[j+1], i-j);
                 arr[j+1] = temp;
             }
         }

@@ -8,9 +8,6 @@
 using namespace std;
 
 int findPivot(int *arr, int start, int end) {
-
-    if(start >= end) return 0;
-
     int pivotPl = 0, half = ((end + start) / 2) - 1;
     int a = arr[start],
             b = arr[half],
