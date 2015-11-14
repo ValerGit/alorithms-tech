@@ -1,9 +1,41 @@
-#include <algorithm>
 #include <string.h>
 #include <stdio.h>
 #include <stack>
-#define STOP_REC 40
+#include <cstdlib>
+#define STOP_REC 18
 
+
+BlackInt* binSearch ( BlackInt* begin, BlackInt* end,  BlackInt* val ) {
+    BlackInt* l = begin;
+    BlackInt* r = end;
+    while(l < r) {
+        BlackInt* m = l + (r - l)/2 ;
+        if( val->operator>(*m) ) l = m + 1;
+        else r = m;
+    }
+    return r;
+}
+
+
+void insertion_sort ( BlackInt* begin, BlackInt* end )
+{
+    BlackInt* iter = begin + 1;
+
+    while( iter < end ) {
+
+        BlackInt* newPos = binSearch(begin, iter, iter);
+        if( newPos < iter ) {
+            BlackInt* ye = new BlackInt(*iter);
+            BlackInt* n = iter+1;
+            memmove( newPos + 1, newPos, (iter-newPos)* sizeof(BlackInt));
+            newPos->operator=(*ye);
+            iter = n;
+            delete[] ye;
+        }
+        else ++iter;
+
+    }
+}
 
 struct Dimension {
     BlackInt* start;
@@ -50,61 +82,17 @@ BlackInt* partition(BlackInt* begin, BlackInt* end) {
 
 }
 
-void quickSort(BlackInt* begin, BlackInt* end) {
-
-    std::stack<Dimension>* stack = new std::stack<Dimension>;
-    stack->push(Dimension(begin,end));
-
-    while(1) {
-        if(stack->size() == 0) break;
-        Dimension temp = stack->top();
-        if( temp.start < temp.end && ((temp.end - temp.start)/ sizeof(Dimension) > STOP_REC)) {
-
-            BlackInt* pivot = partition(temp.start, temp.end);
-            stack->pop();
-            stack->push( Dimension( temp.start, pivot - 1) );
-            stack->push( Dimension( pivot + 1, temp.end) );
-
-        } else stack->pop();
-    }
-    delete stack;
-}
-
-
-BlackInt* binSearch ( BlackInt* begin, BlackInt* end,  BlackInt* val ) {
-    BlackInt* l = begin;
-    BlackInt* r = end;
-    while(l < r) {
-        BlackInt* m = l + (r - l)/2 ;
-        if( val->operator>(*m) ) l = m + 1;
-        else r = m;
-    }
-    return r;
-}
-
-
-void insertion_sort ( BlackInt* begin, BlackInt* end )
-{
-    BlackInt* iter = begin + 1;
-
-    while( iter < end ) {
-
-        BlackInt* newPos = binSearch(begin, iter, iter);
-        if( newPos < iter ) {
-            BlackInt* ye = new BlackInt(*iter);
-            BlackInt* n = iter+1;
-            memmove( newPos + 1, newPos, (iter-newPos)* sizeof(BlackInt));
-            newPos->operator=(*ye);
-            iter = n;
-            delete[] ye;
+void quickSort(BlackInt *begin, BlackInt *end) {
+        if(begin + STOP_REC  >= end) {
+            insertion_sort(begin, end+1);
+            return;
         }
-        else ++iter;
-
-    }
+        BlackInt *pivot = partition(begin, end);
+        quickSort(begin, pivot-1);
+        quickSort(pivot+1, end);
 }
 
 void sort(BlackInt *begin, BlackInt *end) {
     if(begin >= end) return;
     quickSort(begin, end-1);
-    insertion_sort(begin, end);
 }

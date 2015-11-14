@@ -11,6 +11,7 @@
  * Напишите программу, которая по данному расписанию определяет, какое минимальное
  * количество тупиков требуется для работы вокзала.
 */
+
 #include <iostream>
 
 using namespace std;
@@ -19,123 +20,139 @@ struct Time {
     bool isLeaving;
     int time;
 
-    Time() : isLeaving(false), time(0) {}
-    Time(int n) : isLeaving(false), time(n) {}
+    Time() : isLeaving(false), time(0) { }
+    Time(int n) : isLeaving(false), time(n) { }
+    Time(const Time& obj) : isLeaving(obj.isLeaving), time(obj.time) {}
 };
 
-ostream& operator<<(ostream &os, const Time& n) {
+ostream &operator<<(ostream &os, const Time &n) {
     cout << n.time << " ";
     return os;
 }
 
-bool isLess(const Time& one, const Time& two) {
-    if(one.time == two.time) {
-        if(one.isLeaving) return false;
+bool isLess(const Time &one, const Time &two) {
+    if (one.time == two.time) {
+        if (one.isLeaving) return false;
         else return true;
     }
     return one.time < two.time;
 }
 
-template <typename T>
+template<typename T>
 class Heap {
 public:
-    Heap() {}
-    Heap(T*,int);
+    Heap() { }
+    Heap(int);
     ~Heap();
-    void buildHeap();
-    T extractMax();
+
+    void addElement(T);
+    T extractMin();
+    int size;
 
 private:
     void siftDown(int index);
-    T* arr;
-    int size;
+    void siftUp(int index);
+
+    T *arr;
+    int buff_size;
 };
 
-template <typename T>
-Heap<T>::Heap(T* _arr, int n) {
-    size = n;
+template<typename T>
+Heap<T>::Heap(int n) {
+    size = 0;
+    buff_size = n;
     arr = new T[n];
-    for(int i = 0; i < n; ++i) {
-        arr[i] = _arr[i];
-    }
-    buildHeap();
 }
 
-template <typename T>
+template<typename T>
 Heap<T>::~Heap() {
     delete[] arr;
 }
 
-template <typename T>
-void Heap<T>::buildHeap() {
-    for(int i = size/2-1; i >= 0; --i) {
-        siftDown(i);
-    }
+
+template<typename T>
+void Heap<T>::addElement(T obj) {
+    if(size > buff_size) return;
+    arr[size++] = obj;
+    siftUp(size - 1);
 }
 
-template <typename T>
-T Heap<T>::extractMax() {
+template<typename T>
+T Heap<T>::extractMin() {
     T temp = arr[0];
     swap(arr[0], arr[--size]);
     siftDown(0);
     return temp;
 }
 
-template <typename T>
-void Heap<T>::siftDown(int index)
-{
-    for(int i = index; 2*i+2 <= size; ) {
-        int left = 2*i + 1;
-        int right = 2*i + 2;
-        int largest = i;
-        if( left < size  && isLess(arr[left], arr[largest]) ) largest = left;
-        if( right < size  && isLess(arr[right], arr[largest]) ) largest = right;
-
-        if(largest != i) {
-            swap( arr[i], arr[largest] );
-            i = largest;
+template<typename T>
+void Heap<T>::siftUp(int index) {
+    int i = index;
+    while (i > 0) {
+        int upper = (i - 1) / 2;
+        if (isLess(arr[i], arr[upper])) {
+            swap(arr[i], arr[upper]);
+            i = upper;
         } else break;
     }
 }
 
+template<typename T>
+void Heap<T>::siftDown(int index) {
+    for (int i = index; 2 * i + 2 <= size;) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int smallest = i;
+        if (left < size && isLess(arr[left], arr[smallest])) smallest = left;
+        if (right < size && isLess(arr[right], arr[smallest])) smallest = right;
 
-template <class T>
-int findNumber(Heap<T>* mine, int size)
-{
-    //алгоритм извлекает верх кучи и проверяет
-    //приезжает или уезжает поезд
-    int res = 0;
-    int count = 0;
-    for(int i = 0; i < size; ++i) {
+        if (smallest != i) {
+            swap(arr[i], arr[smallest]);
+            i = smallest;
+        } else break;
+    }
+}
 
-        if(mine->extractMax().isLeaving) --count;
+//алгоритм извлекает корень кучи и проверяет
+//приезжает или уезжает поезд
+template<class T>
+int findNumber(Heap<T> *mine) {
+    int res = 0, count = 0, size = mine->size;
+    for (int i = 0; i < size; ++i) {
+
+        if (mine->extractMin().isLeaving) --count;
         else ++count;
 
-        if(count > res) res = count;
+        if (count > res) res = count;
 
     }
     return res;
 }
 
 
-int main()
-{
+int main() {
     int num = 0;
     cin >> num;
     num *= 2;
-    Time* arr = new Time[num];
 
-    //считывание данных
+    Heap<Time> *mine = new Heap<Time>(num);
     int cntr = 0;
-    while(cntr < num) {
-        cin >> arr[cntr++].time;
-        cin >> arr[cntr].time;
-        arr[cntr++].isLeaving = true;
+    Time temp;
+    while (cntr < num) {
+
+        cin >> temp.time;
+        temp.isLeaving = false;
+        mine->addElement(temp);
+        ++cntr;
+
+        cin >> temp.time;
+        temp.isLeaving = true;
+        mine->addElement(temp);
+
+        ++cntr;
     }
 
-    Heap<Time>* mine = new Heap<Time>( arr, num );
-    cout << findNumber(mine, num);
-    delete[] arr;
+    cout << findNumber(mine);
     delete mine;
     return 0;
 }

@@ -1,7 +1,9 @@
 /*
-На числовой прямой окрасили ​N​ отрезков. Известны координаты левого и
-правого концов каждого отрезка (L​i​ и R​i)​ . Найти длину окрашенной части числовой прямой.
+ * На числовой прямой окрасили ​N​ отрезков. Известны координаты левого и
+ * правого концов каждого отрезка (L​i​ и R​i)​.
+ * Найти длину окрашенной части числовой прямой.
 */
+
 #include <iostream>
 
 using namespace std;
@@ -14,71 +16,18 @@ struct Part {
     Part(const Part& o) : isEnd(o.isEnd), val(o.val) {}
 };
 
-bool isBigger(const Part& one, const Part& two) {
+bool isBigger(Part& one, Part& two) {
     return one.val > two.val;
 }
 
 template <typename T>
-class Heap {
-public:
-    Heap() {}
-    Heap(T*,int);
-    ~Heap();
-    T getElem(int i);
-
-private:
-    T* arr;
-    int size;
-    void buildHeap();
-    void sort();
-    void siftDown(int index);
-};
-
-template <typename T>
-Heap<T>::Heap(T* _arr, int n) {
-    size = n;
-    arr = new T[n];
-    for(int i = 0; i < n; ++i) {
-        arr[i] = _arr[i];
-    }
-    buildHeap();
-    sort();
-}
-
-template <typename T>
-Heap<T>::~Heap() {
-    delete[] arr;
-}
-
-template <typename T>
-void Heap<T>::buildHeap() {
-    for(int i = size/2-1; i >= 0; --i) {
-        siftDown(i);
-    }
-}
-
-template <typename T>
-void Heap<T>::sort() {
-    int temp = size--;
-    for(int i = 0; i < temp; ++i) {
-        swap(arr[0], arr[size]);
-        siftDown(0);
-        --size;
-    }
-    size = temp;
-}
-
-template <typename T>
-T Heap<T>::getElem(int i) {
-    return arr[i];
-}
-
-template <typename T>
-void Heap<T>::siftDown(int index) {
+void siftDown(T* arr, int index, int size, bool (*isBigger)(T&, T&)) {
     for(int i = index; 2*i+2 <= size; ) {
+
         int left = 2*i + 1;
         int right = 2*i + 2;
         int largest = i;
+
         if( left < size  && isBigger(arr[left], arr[largest]) ) largest = left;
         if( right < size  && isBigger(arr[right], arr[largest]) ) largest = right;
 
@@ -90,14 +39,25 @@ void Heap<T>::siftDown(int index) {
 }
 
 
-template <class T>
-int isColored(Heap<T>* heap, int size) {
+template <typename T>
+void heapSort(T* arr, size_t size,  bool (*isBigger)(T&, T&) ) {
+    for(int i = size/2 - 1; i >= 0; --i ) {
+        siftDown( arr, i, size, isBigger );
+    }
+    for(int i = 0 ;i < size; ++i) {
+        swap(arr[0], arr[size-i-1]);
+        siftDown(arr, 0, size-i-1, isBigger);
+    }
+}
+
+
+int isColored(Part* heap, int size) {
     int res = 0;
     int count = 0;
     int start = 0;
-
+    heapSort(heap, size, isBigger);
     for(int i = 0; i < size; ++i) {
-        Part temp = heap->getElem(i);
+        Part temp = heap[i];
         if(count == 0) {
             ++count;
             start = temp.val;
@@ -126,10 +86,8 @@ int main()
         arr[cntr++].isEnd = true;
     }
 
-    Heap<Part>* heap  = new Heap<Part>( arr, num );
-    cout << isColored(heap, num);
+    cout << isColored(arr, num);
     delete[] arr;
-    delete heap;
+
     return 0;
 }
-
