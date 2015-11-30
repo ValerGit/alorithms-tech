@@ -9,14 +9,14 @@
  * 1. Оптимизация выбора опорного элемента.
  * 2. Оптимизация Partition.
  * 3. Оптимизация концевой рекурсии.
- *  4. Написать без рекурсии.
+ * 4. Написать без рекурсии.
 */
 
 #include <iostream>
 #include <stack>
 #include <vector>
 #include <cstring>
-#define CUTOFF 18
+#define CUTOFF 0
 
 using namespace std;
 
@@ -55,24 +55,24 @@ void insertion_sort(int* arr, int left, int right) {
 }
 
 int findPivot(int *arr, int start, int end) {
-    int pivotPl = 0, half = ((end + start) / 2) - 1;
-    int a = arr[start],
-            b = arr[half],
-            c = arr[end];
+    int pivotPl = start, half = ((end + start) / 2) - 1;
+//    int a = arr[start],
+//            b = arr[half],
+//            c = arr[end];
 
-    if (a < b) {
-        if (b < c) pivotPl = half;
-        else {
-            if (a < c) pivotPl = end;
-            else pivotPl = start;
-        }
-    } else {
-        if (c < b) pivotPl = half;
-        else {
-            if (a < c) pivotPl = start;
-            else pivotPl = end ;
-        }
-    }
+//    if (a < b) {
+//        if (b < c) pivotPl = half;
+//        else {
+//            if (a < c) pivotPl = end;
+//            else pivotPl = start;
+//        }
+//    } else {
+//        if (c < b) pivotPl = half;
+//        else {
+//            if (a < c) pivotPl = start;
+//            else pivotPl = end ;
+//        }
+//    }
     return pivotPl;
 }
 
