@@ -37,38 +37,45 @@ void fixHeight(Node* root)
     root->height = 1 + (hLeft > hRight ? hLeft : hRight);
 }
 
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
+void fixSubnodes(Node* root) {
+    if(root == 0) return;
+    fixSubnodes( root->left );
+    fixSubnodes( root->right );
+    root->subNodes = 0;
+    if(root->left != 0 ) root->subNodes += 1 + root->left->subNodes;
+    if(root->right != 0) root->subNodes += 1 + root->right->subNodes;
+}
 
 class AVL
 {
 public:
     AVL() { head = 0; }
-    ~AVL() {}
-    void adding(int x){
+    ~AVL() {
+        PostOrderDelete(head);
+    }
+
+    void adding(int x) {
         head  = add(head, x);
+        fixSubnodes(head);
     }
-    void deliting(int x){
+    void deliting(int x) {
         head = del(head, x);
+        fixSubnodes(head);
     }
-    int findStatist(Node*, int);
-    int remake(int place);
+    int remake(int place) {
+        return findStatist( head, place );
+    }
 
 private:
+    void PostOrderDelete(Node* root);
+    int findStatist(Node*, int);
     Node* add(Node* root, int x);
     Node* del(Node*root, int x);
-
     Node* rotateRight(Node* root);
     Node* rotateLeft(Node* root);
     Node* balance(Node* root);
-
-    Node* findMin(Node* root);
-    Node* removeMin(Node* root);
-
+    Node* findMin(Node* root, Node*& toChange);
     Node* head;
-    int setSubnodes(Node *root);
 };
 
 Node* AVL::rotateRight(Node* root)
@@ -107,6 +114,27 @@ Node* AVL::balance(Node* root)
     else return root;
 }
 
+void AVL::PostOrderDelete(Node *root)
+{
+    if (root == 0) return;
+    PostOrderDelete(root->left);
+    PostOrderDelete(root->right);
+    delete root;
+}
+
+int AVL::findStatist(Node* root, int place)
+{
+
+    if( root->left == 0) {
+        if( place == 0 ) return root->key;
+        return findStatist( root->right, place - 1);
+    } else {
+        if( root->left->subNodes + 1  == place) return root->key;
+        if ( root->left->subNodes < place ) return findStatist( root->right, place - root->left->subNodes - 2 );
+        else return findStatist( root->left, place );
+    }
+}
+
 Node* AVL::add(Node* root,int x)
 {
     if(root == 0) return new Node(x);
@@ -126,58 +154,25 @@ Node* AVL::del(Node* root, int x)
         Node* r = root->right;
         delete root;
         if(!r) return l;
-        Node* temp = findMin(r);
-        temp->right = removeMin(r);
+        Node* temp ;
+        Node* right = findMin(r, temp);
+        temp->right = right;
         temp->left = l;
         return balance(temp);
     }
     return balance(root);
-}
 
-Node* AVL::findMin(Node* root)
-{
-    if(root->left == 0) return root;
-    return findMin(root->left);
 }
-
-Node* AVL::removeMin(Node* root)
+Node* AVL::findMin(Node* root, Node*& toChange)
 {
-    if(root->left == 0) return root->right;
-    root->left = removeMin(root->left);
+    if( !root ) return 0;
+    if( !root->left ){
+        toChange = root;
+        return root->right;
+    }
+    root->left = findMin(root->left, toChange);
     return balance(root);
 }
-
-int AVL::setSubnodes(Node* root)
-{
-    if(root == 0) return 0;
-    setSubnodes( root->left );
-    setSubnodes( root->right );
-    root->subNodes = 0;
-    if(root->left != 0 ) root->subNodes += 1 + root->left->subNodes;
-    if(root->right != 0) root->subNodes += 1 + root->right->subNodes;
-    return root->subNodes;
-}
-
-int AVL::findStatist(Node* root, int place)
-{
-    if( root->left == 0) {
-        if( place == 0 ) return root->key;
-        return findStatist( root->right, place - 1);
-    } else {
-        if( root->left->subNodes + 1  == place) return root->key;
-        if ( root->left->subNodes < place )
-            return findStatist( root->right, place - root->left->subNodes - 2 );
-        else return findStatist( root->left, place );
-    }
-}
-
-int AVL::remake(int place) {
-    setSubnodes(head);
-    return findStatist( head, place );
-}
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
 
 int main()
 {
@@ -193,7 +188,6 @@ int main()
     {
         if( values[i] < 0 ) tree.deliting( abs( values[i] ));
         else tree.adding( values[i] );
-
         cout << tree.remake( statist[i] ) << '\n';
     }
     delete[] values;

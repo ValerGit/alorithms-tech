@@ -1,3 +1,13 @@
+/*
+ * Реализуйте структуру данных типа “множество строк” на основе динамической
+ *  хеш­таблицы с открытой адресацией. Хранимые строки непустые и состоят
+ * из строчных латинских букв. Начальный размер таблицы должен быть равным 8­ми.
+ * Перехеширование выполняйте при добавлении элементов в случае, когда коэффициент
+ * заполнения таблицы достигает 3/4.
+ * ​Для разрешения коллизий используйте квадратичное пробирование.
+ * i­ая проба g(k, i)=g(k, i­1) + i (mod m). m ­ степень двойки.
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,7 +19,7 @@ const size_t growFactor = 2;
 const float maxFilling = 0.75;
 const string deleted = "!";
 
-int Hash( const string &data, int tableSize ) {
+int Hash( const string& data, int tableSize ) {
     int hash = 0;
     for ( int i = 0; i < (int) data.length(); ++i ) {
         hash = ( 127 * hash + data[i] ) % tableSize;
@@ -28,18 +38,19 @@ public:
     bool Delete( const T &obj );
 
 private:
+    void grow();
+    int quadroProbing( int posit, int iter ) const;
+
     vector<T> arr;
     size_t keyCount;
     size_t deletedCount;
-
-    void grow();
-    int quadroProbing( int posit, int iter ) const;
 };
 
 template<class T>
 HashTable<T>::HashTable() {
     arr.resize( defaultTableSize, "" );
     keyCount = 0;
+    deletedCount = 0;
 }
 
 template<class T>
@@ -77,6 +88,7 @@ template<class T>
 bool HashTable<T>::Has( const T &obj ) const{
     int initPos = Hash (obj, arr.size());
     int posHash = 0;
+
     for (int i = 0; i < (int) arr.size(); ++i) {
         posHash = quadroProbing( initPos, i );
         if (arr[posHash] == "") return false;
@@ -87,11 +99,10 @@ bool HashTable<T>::Has( const T &obj ) const{
 
 template<class T>
 bool HashTable<T>::Add(const T &obj) {
-
     if(Has(obj)) return false;
 
-    if (((keyCount + 1) > (size_t) ((arr.size() * maxFilling)))
-            || (deletedCount > (arr.size() / 2))) grow();
+    if ( (( keyCount + 1 ) > (size_t) (( arr.size() * maxFilling )))
+            || ( deletedCount > (arr.size() / 2)) ) grow();
 
     int inPos = Hash (obj, arr.size());
     int posHash = 0;
@@ -100,6 +111,7 @@ bool HashTable<T>::Add(const T &obj) {
         posHash = quadroProbing( inPos, i );
         if (arr[posHash] == "" || arr[posHash] == deleted) {
             arr[posHash] = obj;
+            if( arr[posHash] == deleted) --deletedCount;
             ++ keyCount;
             return true;
         }
@@ -126,7 +138,7 @@ bool HashTable<T>::Delete( const T &obj ) {
 
 template<class T>
 int HashTable<T>::quadroProbing( int posit, int iter ) const {
-    return (int) ((posit + ((iter * (iter + 1) / 2))) % arr.size());
+    return (int) (( posit + (( iter * (iter + 1) / 2 ))) % arr.size());
 }
 
 int main() {

@@ -1,27 +1,32 @@
+/*
+ * Дано число N < 10​и последовательность целых чисел из [­2​..2​] длиной N.
+ * Требуется построить бинарное дерево, заданное наивным порядком вставки.
+ * Т.е., при добавлении очередного числа K в дерево с корнем root, если
+ * root→Key ≤ K, то узел K добавляется в правое поддерево root; иначе в
+ * левое поддерево root.
+ * Выведите элементы в порядке post­order (снизу вверх).
+ */
+
 #include <iostream>
+#include <stack>
 
 using namespace std;
 
 struct Node
 {
-    Node() {}
-    Node(int val)
-    {
-        value = val;
-    }
-    Node(const Node& obj)
-    {
-        value = obj.value;
+    Node() : left(0), right(0), value(0) {}
+    Node(int val) : left(0), right(0),value(val) {}
+    Node(const Node& obj): value(obj.value) {
         left = new Node;
         left = obj.left;
         right = new Node;
         right = obj.right;
     }
     ~Node() {}
+
+    Node* left;
+    Node* right;
     int value;
-    Node* left = 0;
-    Node* right = 0;
-    int subNodes = 0;
 };
 
 class BST
@@ -29,16 +34,21 @@ class BST
 public:
     BST();
     ~BST();
+
+    void adding(int x) {
+        addElement( head, x );
+    }
+    void postSeqCall(){
+        postSeq( head );
+    }
+
+private:
     Node* addElement(Node* , int );
-    void inSeq(Node*);
-    void preSeq(Node*);
-    void postSeq(Node*);
-    void levSeq(Node*, int);
-    int findMe(Node*, int);
-    Node* head;
-//private:
     void deleting(Node*);
+    void postSeq(Node*);
+
     int hight;
+    Node* head;
 };
 
 BST::BST()
@@ -49,7 +59,7 @@ BST::BST()
 
 BST::~BST()
 {
-    deleting(head);
+    deleting (head);
     delete head;
 }
 
@@ -64,98 +74,66 @@ void BST::deleting(Node* root)
 
 Node* BST::addElement(Node* root, int toAdd)
 {
-    if(head == 0)
-    {
+    if(head == 0) {
         Node* temp = new Node(toAdd);
-        temp->subNodes = 0;
         head = temp;
         return 0;
     }
-    if(root == 0)
-    {
-        Node* temp = new Node(toAdd);
-        temp->subNodes = 0;
-        return temp;
+    Node* temp = 0;
+    while( root != 0 ) {
+        temp = root;
+        if ( root->value <= toAdd ) root = root->right;
+        else root = root->left;
     }
-    if(root->value <= toAdd) root->right = addElement(root->right, toAdd);
-    else root->left = addElement (root->left, toAdd);
-    root->subNodes +=1;
-    return root;
-}
-
-void BST::inSeq(Node* root)
-{
-    if(root == 0) return;
-    inSeq(root->left);
-    cout << root->value << " ";
-    inSeq(root->right);
-}
-
-void BST::preSeq(Node* root)
-{
-    if(root == 0) return;
-    cout << root->value << " ";
-    preSeq(root->left);
-    preSeq(root->right);
+    if(temp->value <= toAdd) temp->right = new Node(toAdd);
+    else temp->left = new Node(toAdd);
 }
 
 void BST::postSeq(Node* root)
 {
     if(root == 0) return;
-    postSeq(root->left);
-    postSeq(root->right);
-    cout << root->value << " ";
-}
+    stack<Node*> theStack;
+    Node* prev = NULL;
+    theStack.push( root );
+    while( !theStack.empty() ) {
+        Node* current = theStack.top();
 
-void BST::levSeq(Node* root, int num)
-{
-    for(int i = 0; i < num; ++i)
-    {
-        cout << root[i].value << " " <<root[i].subNodes << endl;
+        if( !prev || prev->left == current || prev->right == current) {
+            if( current->left ) theStack.push( current->left );
+            else if ( current->right ) theStack.push( current->right );
+            else {
+                cout << current->value << " ";
+                theStack.pop();
+            }
+        }
+        else if ( current->left == prev ) {
+            if( current->right ) theStack.push( current->right );
+            else {
+                cout << current->value << " ";
+                theStack.pop();
+            }
+        }
+        else if( current->right == prev ) {
+            cout << current->value << " ";
+            theStack.pop();
+        }
+        prev = current;
     }
-    int iter = 0;
-    Node* arr = new Node[num*2];
-    for(int i = 0; i < num; ++i)
-    {
-        if(root[i].left != 0  && root[i].right != 0)
-        {
-            arr[iter++] = *root[i].left;
-            arr[iter++] = *root[i].right;
-        }
-        else if(root[i].left == 0 && root[i].right != 0)
-        {
-            arr[iter++] = *root[i].right;
-        }
-        else if(root[i].right == 0 && root[i].left != 0)
-        {
-            arr[iter++] = *root[i].left;
-        }
-    }
-    if(iter == 0) return;
-    levSeq(arr, iter);
-    delete[] arr;
-}
-
-int BST::findMe(Node* root, int num)
-{
-    if(num < 0 || num > root->subNodes) return -1;
-    if(root->left == 0 || root->left->subNodes + 1 == num)
-        return root->value;
-    if(root->left->subNodes < num)
-        return findMe(root->right, (num - root->left->subNodes - 2));
-    else return findMe(root->left, num);
 }
 
 int main()
 {
-    BST mine;
+    BST* mine = new BST;
     int n = 0;
     cin >> n;
     int* arr = new int[n];
     for(int i =0; i < n; ++i) {
         cin >> arr[i];
-        mine.addElement(mine.head, arr[i]);
+        mine->adding( arr[i] );
     }
-    mine.postSeq(mine.head);
+    mine->postSeqCall();
+
+    delete mine;
+    delete[] arr;
     return 0;
 }
